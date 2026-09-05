@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #15181c;
+    --panel: #1e232a;
+    --panel-2: #262d35;
+    --text: #ece8e0;
+    --muted: #8d939b;
+    --gold: #c79a3c;
+    --gold-dim: #8a723a;
+    --sage: #5c8f6c;
+    --sage-dim: #3d5c47;
+    --brick: #8a4b3e;
+    --brick-dim: #5c352c;
+    --line: #2e343c;
+    --radius: 10px;
+  }
+  *{ box-sizing: border-box; }
+  html{ -webkit-text-size-adjust: 100%; }
+  body{
+    margin:0;
+    background: var(--ink);
+    color: var(--text);
+    font-family: 'Fraunces', Georgia, serif;
+    min-height: 100vh;
+    padding: 0 0 64px 0;
+  }
+  .app{
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 36px 20px 0;
+  }
+  .mono{ font-family: 'IBM Plex Mono', monospace; }
+
+  /* ---- Hero ---- */
+  .hero{
+    text-align: center;
+    padding: 8px 0 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .hero-number{
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 76px;
+    line-height: 1;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+  }
+  .hero-unit{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .hero-vow{
+    margin-top: 22px;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 19px;
+    line-height: 1.45;
+    color: var(--text);
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ---- Today card ---- */
+  .today-card{
+    margin-top: 26px;
+    padding: 22px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .today-date{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .today-status{
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 16px;
+    min-height: 20px;
+  }
+  .today-status.kept{ color: var(--sage); }
+  .today-status.slipped{ color: var(--brick); }
+  .today-actions{
+    display: flex;
+    gap: 10px;
+  }
+  button{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  button:hover{ border-color: var(--gold-dim); }
+  button:focus-visible{ outline: 2px solid var(--gold); outline-offset: 2px; }
+  .today-actions button{ flex: 1; }
+  #btnKept.active{ background: var(--sage-dim); border-color: var(--sage); }
+  #btnSlipped.active{ background: var(--brick-dim); border-color: var(--brick); }
+
+  /* ---- Stats ---- */
+  .stats-grid{
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .stat-value{
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--text);
+  }
+  .stat-label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ---- Calendar ---- */
+  .calendar{
+    margin-top: 30px;
+  }
+  .calendar-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .calendar-header button{
+    padding: 8px 12px;
+    background: transparent;
+  }
+  .month-label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .calendar-grid{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .day-head{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    padding-bottom: 4px;
+  }
+  .day-cell{
+    aspect-ratio: 1;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  .day-cell.empty{ visibility: hidden; cursor: default; }
+  .day-cell.future{ color: var(--line); cursor: default; opacity: 0.5; }
+  .day-cell.kept{ background: var(--sage-dim); border-color: var(--sage); color: var(--text); }
+  .day-cell.slipped{ background: var(--brick-dim); border-color: var(--brick); color: var(--text); }
+  .day-cell.today{ box-shadow: 0 0 0 2px var(--gold); }
+  .day-cell:not(.future):not(.empty):hover{ transform: scale(1.08); }
+
+  .legend{
+    display: flex;
+    gap: 16px;
+    margin-top: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .legend-item{ display: flex; align-items: center; gap: 6px; }
+  .legend-dot{ width: 9px; height: 9px; border-radius: 3px; }
+
+  /* ---- Toolkit ---- */
+  .toolkit{
+    margin-top: 32px;
+    padding: 20px 22px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .toolkit h2{
+    font-size: 17px;
+    font-weight: 500;
+    font-style: italic;
+    margin: 0 0 14px;
+    color: var(--text);
+  }
+  .toolkit ul{
+    margin: 0;
+    padding-left: 18px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.9;
+  }
+  .toolkit li::marker{ color: var(--gold-dim); }
+
+  .foot-note{
+    margin-top: 24px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--line);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; }
+  }
+
+  @media (max-width: 380px){
+    .hero-number{ font-size: 60px; }
+    .stats-grid{ grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="hero">
+    <div class="hero-label">current streak</div>
+    <div class="hero-number mono" id="streakNumber">0</div>
+    <div class="hero-unit">days</div>
+    <div class="hero-vow" id="vowText">Loading&hellip;</div>
+  </div>
+
+  <div class="today-card">
+    <div class="today-date mono" id="todayDate"></div>
+    <div class="today-status" id="todayStatus">Not marked yet today.</div>
+    <div class="today-actions">
+      <button id="btnKept">Kept my word</button>
+      <button id="btnSlipped">Not this time</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat">
+      <div class="stat-value mono" id="statLongest">0</div>
+      <div class="stat-label">longest streak</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value mono" id="statRate">0%</div>
+      <div class="stat-label">success rate</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value mono" id="statTotal">0</div>
+      <div class="stat-label">days tracked</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value mono" id="statMonth">0</div>
+      <div class="stat-label">kept this month</div>
+    </div>
+  </div>
+
+  <div class="calendar">
+    <div class="calendar-header">
+      <button id="prevMonth" aria-label="Previous month">&larr;</button>
+      <div class="month-label" id="monthLabel"></div>
+      <button id="nextMonth" aria-label="Next month">&rarr;</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--sage)"></span>kept</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--brick)"></span>not this time</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--panel);border:1px solid var(--gold)"></span>today</div>
+    </div>
+  </div>
+
+  <div class="toolkit">
+    <h2>If it's loud right now</h2>
+    <ul>
+      <li>Get up. Change the room you're in.</li>
+      <li>Set a 10-minute timer and move your body until it ends.</li>
+      <li>Say it plainly: "this is an urge, not an emergency."</li>
+      <li>Text or call someone — doesn't matter what about.</li>
+      <li>Reread why you started this. Then decide again.</li>
+    </ul>
+  </div>
+
+  <div class="foot-note">stored privately on this device</div>
+
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'vow-entries';
+  let entries = {};
+  let viewYear, viewMonth; // viewMonth 0-indexed
+
+  const vows = [
+    "Whatever the urge promises, it never delivers what it says.",
+    "You already decided. Today is just where you prove it.",
+    "The feeling passes in minutes. The choice lasts.",
+    "This is not about willpower running out. It's about which voice you listen to.",
+    "No matter how loud it gets, you get to be louder.",
+    "One more day kept is one more day you can trust yourself.",
+    "The urge is a wave. Waves break. You don't have to.",
+    "You're not fighting today. You're just not negotiating.",
+    "Nothing about right now changes what you decided this morning.",
+    "Strength isn't never wanting to. It's not obeying it anyway.",
+    "You don't owe the urge an explanation. Just a no.",
+    "Every day this stays true, it gets a little more true."
+  ];
+
+  function pad(n){ return n < 10 ? '0'+n : ''+n; }
+  function toKey(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  function todayDate(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+  function dayOfYear(d){
+    const start = new Date(d.getFullYear(), 0, 0);
+    return Math.floor((d - start) / 86400000);
+  }
+
+  async function loadEntries(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, false);
+      entries = res && res.value ? JSON.parse(res.value) : {};
+    }catch(e){
+      entries = {};
+    }
+  }
+
+  async function saveEntries(){
+    try{
+      await window.storage.set(STORAGE_KEY, JSON.stringify(entries), false);
+    }catch(e){
+      console.error('Could not save', e);
+    }
+  }
+
+  function computeStreak(){
+    const t = todayDate();
+    let streak = 0;
+    let cursor = new Date(t);
+    // if today isn't marked yet, start counting from yesterday
+    if(!entries[toKey(t)]){
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    while(true){
+      const key = toKey(cursor);
+      if(entries[key] === 'kept'){
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  function computeLongest(){
+    const dates = Object.keys(entries).sort();
+    let longest = 0, run = 0, prev = null;
+    for(const key of dates){
+      if(entries[key] !== 'kept'){ run = 0; prev = null; continue; }
+      const d = new Date(key + 'T00:00:00');
+      if(prev){
+        const diff = Math.round((d - prev) / 86400000);
+        run = diff === 1 ? run + 1 : 1;
+      } else {
+        run = 1;
+      }
+      longest = Math.max(longest, run);
+      prev = d;
+    }
+    return longest;
+  }
+
+  function computeStats(){
+    const keys = Object.keys(entries);
+    const total = keys.length;
+    const kept = keys.filter(k => entries[k] === 'kept').length;
+    const rate = total ? Math.round((kept/total)*100) : 0;
+    const t = todayDate();
+    const monthPrefix = t.getFullYear()+'-'+pad(t.getMonth()+1);
+    const monthKept = keys.filter(k => k.startsWith(monthPrefix) && entries[k] === 'kept').length;
+    return { total, rate, monthKept };
+  }
+
+  function renderHero(){
+    const t = todayDate();
+    document.getElementById('streakNumber').textContent = computeStreak();
+    const vow = vows[dayOfYear(t) % vows.length];
+    document.getElementById('vowText').textContent = '\u201c' + vow + '\u201d';
+  }
+
+  function renderStats(){
+    document.getElementById('statLongest').textContent = computeLongest();
+    const s = computeStats();
+    document.getElementById('statRate').textContent = s.rate + '%';
+    document.getElementById('statTotal').textContent = s.total;
+    document.getElementById('statMonth').textContent = s.monthKept;
+  }
+
+  function renderToday(){
+    const t = todayDate();
+    document.getElementById('todayDate').textContent = t.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+    const key = toKey(t);
+    const status = entries[key];
+    const statusEl = document.getElementById('todayStatus');
+    const btnKept = document.getElementById('btnKept');
+    const btnSlipped = document.getElementById('btnSlipped');
+    btnKept.classList.remove('active');
+    btnSlipped.classList.remove('active');
+    statusEl.classList.remove('kept','slipped');
+    if(status === 'kept'){
+      statusEl.textContent = 'Marked kept for today.';
+      statusEl.classList.add('kept');
+      btnKept.classList.add('active');
+    } else if(status === 'slipped'){
+      statusEl.textContent = 'Marked not-this-time for today. Tomorrow starts clean.';
+      statusEl.classList.add('slipped');
+      btnSlipped.classList.add('active');
+    } else {
+      statusEl.textContent = 'Not marked yet today.';
+    }
+  }
+
+  function renderCalendar(){
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('monthLabel').textContent = monthNames[viewMonth] + ' ' + viewYear;
+
+    const dayHeads = ['S','M','T','W','T','F','S'];
+    dayHeads.forEach(dh => {
+      const el = document.createElement('div');
+      el.className = 'day-head';
+      el.textContent = dh;
+      grid.appendChild(el);
+    });
+
+    const firstDay = new Date(viewYear, viewMonth, 1);
+    const startOffset = firstDay.getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const t = todayDate();
+
+    for(let i=0; i<startOffset; i++){
+      const el = document.createElement('div');
+      el.className = 'day-cell empty';
+      grid.appendChild(el);
+    }
+
+    for(let day=1; day<=daysInMonth; day++){
+      const cellDate = new Date(viewYear, viewMonth, day);
+      const key = toKey(cellDate);
+      const el = document.createElement('div');
+      el.className = 'day-cell';
+      el.textContent = day;
+
+      const isFuture = cellDate > t;
+      const isToday = toKey(cellDate) === toKey(t);
+      const status = entries[key];
+
+      if(isFuture) el.classList.add('future');
+      if(status === 'kept') el.classList.add('kept');
+      if(status === 'slipped') el.classList.add('slipped');
+      if(isToday) el.classList.add('today');
+
+      if(!isFuture){
+        el.addEventListener('click', () => toggleDay(key));
+        el.setAttribute('role','button');
+        el.setAttribute('tabindex','0');
+        el.setAttribute('aria-label', cellDate.toDateString() + (status ? ', marked ' + status : ', unmarked'));
+        el.addEventListener('keydown', (e) => {
+          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleDay(key); }
+        });
+      }
+
+      grid.appendChild(el);
+    }
+  }
+
+  async function toggleDay(key){
+    const current = entries[key];
+    if(!current){
+      entries[key] = 'kept';
+    } else if(current === 'kept'){
+      entries[key] = 'slipped';
+    } else {
+      delete entries[key];
+    }
+    await saveEntries();
+    renderAll();
+  }
+
+  async function setToday(status){
+    const key = toKey(todayDate());
+    entries[key] = status;
+    await saveEntries();
+    renderAll();
+  }
+
+  function renderAll(){
+    renderHero();
+    renderStats();
+    renderToday();
+    renderCalendar();
+  }
+
+  document.getElementById('btnKept').addEventListener('click', () => setToday('kept'));
+  document.getElementById('btnSlipped').addEventListener('click', () => setToday('slipped'));
+  document.getElementById('prevMonth').addEventListener('click', () => {
+    viewMonth--;
+    if(viewMonth < 0){ viewMonth = 11; viewYear--; }
+    renderCalendar();
+  });
+  document.getElementById('nextMonth').addEventListener('click', () => {
+    const t = todayDate();
+    if(viewYear === t.getFullYear() && viewMonth === t.getMonth()) return;
+    viewMonth++;
+    if(viewMonth > 11){ viewMonth = 0; viewYear++; }
+    renderCalendar();
+  });
+
+  (async function init(){
+    const t = todayDate();
+    viewYear = t.getFullYear();
+    viewMonth = t.getMonth();
+    await loadEntries();
+    renderAll();
+  })();
+})();
+</script>
+
+</body>
+</html>
